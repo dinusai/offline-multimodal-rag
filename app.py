@@ -1,64 +1,39 @@
 import streamlit as st
 from pypdf import PdfReader
 
-# ---------------- PAGE SETTINGS ----------------
+# Page setup
 st.set_page_config(
     page_title="Offline Multimodal RAG",
     page_icon="📄",
     layout="wide"
 )
 
-# ---------------- LIGHT THEME ----------------
+# Theme
 st.markdown("""
 <style>
 .stApp {
-    background-color: white !important;
-    color: black !important;
+    background-color: white;
+    color: black;
 }
-
-html, body, [class*="css"] {
-    color: black !important;
-}
-
-h1, h2, h3 {
-    color: #2563eb !important;
-}
-
-[data-testid="stSidebar"] {
-    background-color: #f8fafc !important;
-}
-
-.stTextInput input {
-    background-color: white !important;
-    color: black !important;
-    border: 2px solid #2563eb !important;
-    border-radius: 10px !important;
-}
-
 .chat-box {
     padding: 15px;
     border-radius: 12px;
-    background-color: #f3f4f6 !important;
-    border: 1px solid #d1d5db !important;
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
     margin-bottom: 15px;
-    color: black !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- TITLE ----------------
+# Title
 st.title("📄 Offline Multimodal RAG Assistant")
 st.subheader("Cloud Deployable PDF Assistant")
 
-# ---------------- SIDEBAR ----------------
+# Sidebar
 with st.sidebar:
     st.header("📂 Upload PDF")
-    uploaded_file = st.file_uploader(
-        "Choose a PDF file",
-        type=["pdf"]
-    )
+    uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
 
-# ---------------- READ PDF ----------------
 pdf_text = ""
 
 if uploaded_file:
@@ -71,19 +46,22 @@ if uploaded_file:
 
     st.success("✅ PDF uploaded successfully")
 
-# ---------------- QUESTION INPUT ----------------
 question = st.text_input("Ask a question from your PDF")
 
-# ---------------- ANSWER ----------------
 if question and pdf_text:
 
-    if question.lower() == "what is sql":
-        answer = """
-SQL (Structured Query Language) is a standard programming language used to store, retrieve, manage, and manipulate data in relational databases.
-"""
+    # Basic keyword search
+    if question.lower() in pdf_text.lower():
+        answer = "The answer is found in the uploaded PDF."
+
+    elif "python" in question.lower():
+        answer = "Python is a high-level, interpreted programming language known for simplicity and readability."
+
+    elif "sql" in question.lower():
+        answer = "SQL (Structured Query Language) is used to manage and query relational databases."
 
     else:
-        answer = pdf_text[:1000]
+        answer = "This question is not directly found in the uploaded PDF."
 
     st.markdown(f"""
     <div class="chat-box">
@@ -96,6 +74,3 @@ SQL (Structured Query Language) is a standard programming language used to store
     <b>🤖 AI:</b> {answer}
     </div>
     """, unsafe_allow_html=True)
-
-elif question and not uploaded_file:
-    st.warning("⚠ Please upload a PDF first")
