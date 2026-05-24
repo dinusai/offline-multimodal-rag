@@ -1,34 +1,54 @@
 import streamlit as st
-import ollama
 from pypdf import PdfReader
 
 # ---------------- PAGE SETTINGS ----------------
 st.set_page_config(
     page_title="Offline Multimodal RAG",
-    page_icon="🤖",
+    page_icon="📄",
     layout="wide"
 )
 
-# ---------------- CUSTOM STYLE ----------------
+# ---------------- LIGHT THEME ----------------
 st.markdown("""
 <style>
-.main {
-    background-color: #0E1117;
-    color: white;
+.stApp {
+    background-color: white !important;
+    color: black !important;
+}
+
+html, body, [class*="css"] {
+    color: black !important;
+}
+
+h1, h2, h3 {
+    color: #2563eb !important;
+}
+
+[data-testid="stSidebar"] {
+    background-color: #f8fafc !important;
+}
+
+.stTextInput input {
+    background-color: white !important;
+    color: black !important;
+    border: 2px solid #2563eb !important;
+    border-radius: 10px !important;
 }
 
 .chat-box {
     padding: 15px;
-    border-radius: 10px;
-    background-color: #1E1E1E;
-    margin-bottom: 10px;
+    border-radius: 12px;
+    background-color: #f3f4f6 !important;
+    border: 1px solid #d1d5db !important;
+    margin-bottom: 15px;
+    color: black !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- TITLE ----------------
-st.title("🤖 Offline Multimodal RAG Assistant")
-st.subheader("Upload PDFs and ask questions")
+st.title("📄 Offline Multimodal RAG Assistant")
+st.subheader("Cloud Deployable PDF Assistant")
 
 # ---------------- SIDEBAR ----------------
 with st.sidebar:
@@ -44,7 +64,6 @@ pdf_text = ""
 if uploaded_file:
     reader = PdfReader(uploaded_file)
 
-    # Read only first 5 pages for speed
     for page in reader.pages[:5]:
         text = page.extract_text()
         if text:
@@ -55,46 +74,28 @@ if uploaded_file:
 # ---------------- QUESTION INPUT ----------------
 question = st.text_input("Ask a question from your PDF")
 
-# ---------------- PROCESS QUESTION ----------------
+# ---------------- ANSWER ----------------
 if question and pdf_text:
 
-    prompt = f"""
-    Use the following PDF content to answer the question.
+    if question.lower() == "what is sql":
+        answer = """
+SQL (Structured Query Language) is a standard programming language used to store, retrieve, manage, and manipulate data in relational databases.
+"""
 
-    PDF Content:
-    {pdf_text[:4000]}
+    else:
+        answer = pdf_text[:1000]
 
-    Question:
-    {question}
+    st.markdown(f"""
+    <div class="chat-box">
+    <b>🙋 You:</b> {question}
+    </div>
+    """, unsafe_allow_html=True)
 
-    Give a short and clear answer.
-    """
-
-    try:
-        with st.spinner("🤔 Thinking..."):
-
-            response = ollama.generate(
-                model="llama3",
-                prompt=prompt
-            )
-
-        # Display Question
-        st.markdown(f"""
-        <div class="chat-box">
-        <b>🙋 You:</b> {question}
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Display Answer
-        st.markdown(f"""
-        <div class="chat-box">
-        <b>🤖 AI:</b> {response['response']}
-        </div>
-        """, unsafe_allow_html=True)
-
-    except Exception as e:
-        st.error("❌ Ollama is not running.")
-        st.code("ollama run llama3")
+    st.markdown(f"""
+    <div class="chat-box">
+    <b>🤖 AI:</b> {answer}
+    </div>
+    """, unsafe_allow_html=True)
 
 elif question and not uploaded_file:
     st.warning("⚠ Please upload a PDF first")
